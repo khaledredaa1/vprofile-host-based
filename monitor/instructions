@@ -1,0 +1,16 @@
+## Monitoring Integration and Connectivity ##
+## Prometheus ##
+ Scrapes metrics from:
+     MySQL Exporter at 192.168.56.10:9104
+     Memecached Exporter at 192.168.56.20:9150
+     RabbitMQ Exporter at 192.168.56.30:9419
+     JMX Exporter at 192.168.56.40:5556
+     NGINX Exporter at 192.168.56.50:9113
+     Node Exporter at 192.168.56.30:9100
+ These setups allow Prometheus on monitor01 to aggregate metrics from the mentioned exporters for visualization in Grafana.
+
+## Grafana ##
+ Access Grafana at http://192.168.56.10:3000.
+ log in with the default credentials (admin / admin).
+ Add Prometheus as a data source at http://192.168.56.10:9090, then click "Save & Test" to confirm.
+ Import compatible dashboard to visualize Exporters metrics.
