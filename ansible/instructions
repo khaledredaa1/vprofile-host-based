@@ -1,0 +1,135 @@
+#### Ansible Setup Commands - Manual Setup ####
+
+# Install EPEL repository, Ansible, and Python
+sudo yum update -y
+sudo dnf install epel-release -y
+sudo dnf install ansible -y
+sudo dnf install python3 -y
+
+# Edit /etc/hosts to add database and service entries
+sudo vim /etc/hosts
+
+192.168.56.10  db01
+192.168.56.11  mc01
+192.168.56.12  rmq01
+192.168.56.13  app01
+192.168.56.14  web01
+
+# Configure Ansible settings
+sudo vim /etc/ansible/ansible.cfg
+
+[defaults]
+remote_port       = 22
+remote_user       = manager01
+host_key_checking = False
+roles_path        = /home/vagrant/vproject/roles
+
+[privilege_escalation]
+become          = True
+become_method   = sudo
+become_user     = root
+become_ask_pass = False
+
+# Create Ansible hosts file
+sudo vim /etc/ansible/hosts
+ [vprofile]
+   db01
+   mc01
+   rmq01
+   app01
+   web01
+   monitor01
+ [mariadb]
+   db01
+ [memcache]
+   mc01
+ [rabbitmq]
+   rmq01
+ [tomcat]
+   app01
+ [nginx]
+   web01
+ [monitor]
+   monitor01
+
+# Ensure passwordless sudo for the vagrant user
+sudo vim /etc/sudoers.d/vagrant
+vagrant ALL=(ALL) NOPASSWD:ALL
+
+# Generate SSH keys
+ssh-keygen
+
+# Copy SSH keys to remote hosts
+
+ssh-copy-id vagrant@db01
+ssh-copy-id vagrant@mc01
+ssh-copy-id vagrant@rmq01
+ssh-copy-id vagrant@app01
+ssh-copy-id vagrant@web01
+ssh-copy-id vagrant@monitor01
+
+## web01 is an Ubuntu machine and you might get "Permission denied (publickey)" error while trying to SSH into an Ubuntu machine.
+## Accordingly you might need to access the Ubuntu machine in another way (like a console).
+## Copy the content of the ~/.ssh/id_rsa.pub file (which is SSH public key) on the "manager machine".
+vim ~/.ssh/id_rsa.pub
+## Take the input and append it to the ~/.ssh/authorized_keys file on the Ubuntu machine.
+sudo vim ~/.ssh/authorized_keys
+
+# Test ansible SSH connection
+ansible all -m ping
+
+#######
+#######
+#######
+#######
+
+# Create vproject directory
+mkdir vproject
+cd vproject/
+
+# Create roles directory inside vproject directory
+mkdir roles
+cd roles/
+
+# Initiate 5 different roles under vproject directory
+ansible-galaxy init mariadb
+ansible-galaxy init memcached
+ansible-galaxy init rabbitmq
+ansible-galaxy init tomcat
+ansible-galaxy init nginx
+ansible-galaxy init prometheus
+
+# Roles should be defined under file tasks/main.yml
+vim mariadb/tasks/main.yml
+vim memcached/tasks/main.yml
+vim rabbitmq/tasks/main.yml
+vim tomcat/tasks/main.yml
+vim nginx/tasks/main.yml
+vim prometheus/tasks/main.yml
+
+######
+######
+######
+
+# Create playbooks directory out of roles directory
+mkdir playbooks
+cd playbooks/
+
+# Create 5 different playbooks
+vim mariadb_setup.yml
+vim memcached_setup.yml
+vim rabbitmq_setup.yml
+vim tomcat_setup.yml
+vim nginx_setup.yml
+vim prometheus_setup.yml
+
+# Run playbooks
+ansible-playbook mariadb_setup.yml
+ansible-playbook memcached_setup.yml
+ansible-playbook rabbitmq_setup.yml
+ansible-playbook tomcat_setup.yml
+ansible-playbook nginx_setup.yml
+ansible-playbook prometheus_setup.yml
+
+# playbooks have one separate file. 
+# Each role has it's own YML file.
